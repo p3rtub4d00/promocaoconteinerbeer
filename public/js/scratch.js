@@ -1,4 +1,3 @@
-// public/js/scratch.js
 document.addEventListener('DOMContentLoaded', async () => {
     const canvas = document.getElementById('scratchCanvas');
     const ctx = canvas.getContext('2d');
@@ -8,7 +7,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     let isDrawing = false;
     let prize = "";
 
-    // Iniciar jogo buscando prêmio no servidor
     playBtn.addEventListener('click', async () => {
         try {
             const response = await fetch('/api/play', { method: 'POST' });
@@ -29,23 +27,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     function setupCanvas() {
-        // Preencher com a cor laranja da marca
         ctx.fillStyle = '#f36c21';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Texto instrucional na capa
         ctx.fillStyle = '#ffffff';
         ctx.font = '20px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('Raspe Aqui', canvas.width / 2, canvas.height / 2);
 
-        // Configuração do "pincel" que apaga
         ctx.globalCompositeOperation = 'destination-out';
         ctx.lineWidth = 40;
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
 
-        // Eventos Mobile e Desktop
         canvas.addEventListener('mousedown', startDrawing);
         canvas.addEventListener('mousemove', draw);
         canvas.addEventListener('mouseup', stopDrawing);
@@ -62,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function draw(e) {
         if (!isDrawing) return;
-        e.preventDefault(); // Evita scroll no mobile
+        e.preventDefault();
 
         const rect = canvas.getBoundingClientRect();
         const x = (e.clientX || e.touches[0].clientX) - rect.left;
@@ -81,7 +75,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         ctx.beginPath();
     }
 
-    // Calcula a porcentagem raspada
     function checkCompletion() {
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         let clearPixels = 0;
@@ -95,17 +88,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const clearPercentage = (clearPixels / totalPixels) * 100;
 
-        // Se raspar 60%, revela tudo e aciona o fim de jogo
         if (clearPercentage > 60) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            canvas.style.pointerEvents = 'none'; // Desabilita novos toques
-            showVictory();
+            canvas.style.pointerEvents = 'none';
+            if (window.showVictoryUI) window.showVictoryUI(prize);
         }
-    }
-
-    function showVictory() {
-        // Aqui você adiciona a animação de confete e som
-        console.log("Prêmio revelado!");
-        // Exibir botões de compartilhamento do WhatsApp
     }
 });
