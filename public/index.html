@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Raspadinha Premiada - Conteiner Beer</title>
-    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <link rel="stylesheet" href="css/style.css">
-    
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
@@ -24,8 +20,13 @@
             <p class="subtitle">Raspe o cartão abaixo e descubra se hoje é o seu dia de sorte!</p>
         </header>
 
+        <div class="winners-ticker">
+            <div class="ticker-content" id="tickerContent">
+                <i class="fa-solid fa-spinner fa-spin"></i> Carregando últimos ganhadores...
+            </div>
+        </div>
+
         <div class="game-card">
-            
             <button id="playBtn" class="btn-premium pulse-anim">
                 <i class="fa-solid fa-ticket"></i> QUERO JOGAR AGORA
             </button>
@@ -41,15 +42,9 @@
             <div id="resultActions" class="result-box" style="display: none;">
                 <div class="victory-icon"><i class="fa-solid fa-award"></i></div>
                 <p id="victoryMessage" class="victory-message"></p>
-                
                 <div class="action-buttons">
-                    <button id="whatsappShareBtn" class="btn-social btn-whatsapp">
-                        <i class="fa-brands fa-whatsapp"></i> Compartilhar
-                    </button>
-                    
-                    <button id="copyLinkBtn" class="btn-social btn-copy">
-                        <i class="fa-solid fa-link"></i> Copiar Link
-                    </button>
+                    <button id="whatsappShareBtn" class="btn-social btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Compartilhar</button>
+                    <button id="copyLinkBtn" class="btn-social btn-copy"><i class="fa-solid fa-link"></i> Copiar Link</button>
                 </div>
             </div>
         </div>
@@ -60,8 +55,7 @@
     <footer class="app-footer">
         <p>&copy; 2026 Conteiner Beer. Para maiores de 18 anos.</p>
         <div class="legal-links">
-            <a href="termos.html">Termos de Uso</a> &bull; 
-            <a href="privacidade.html">Privacidade</a>
+            <a href="termos.html">Termos de Uso</a> &bull; <a href="privacidade.html">Privacidade</a>
         </div>
     </footer>
 
@@ -74,7 +68,6 @@
         window.showVictoryUI = function(prize) {
             document.getElementById('resultActions').style.display = 'block';
             document.querySelector('.instruction-text').style.display = 'none';
-            
             const vicIcon = document.querySelector('.victory-icon i');
             
             if (prize === 'Tente Novamente') {
@@ -84,19 +77,31 @@
             } else {
                 document.getElementById('victoryMessage').innerHTML = `Parabéns!<br>Você ganhou:<br><span class="highlight-prize">${prize}</span><br><span style="font-size:14px; font-weight:400; color:#666;">Chame o garçom e resgate agora.</span>`;
                 vicIcon.className = 'fa-solid fa-trophy';
-                vicIcon.style.color = '#f1c40f'; // Dourado
+                vicIcon.style.color = '#f1c40f';
                 confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#f36c21', '#2d6cdf', '#ffffff'] });
             }
 
             const siteUrl = window.location.href;
             const msg = encodeURIComponent(`Tô no Conteiner Beer 🍺 e tirei a sorte grande no jogo das mesas! Vem tentar a sorte também: ${siteUrl}`);
             document.getElementById('whatsappShareBtn').onclick = () => window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
-            
-            document.getElementById('copyLinkBtn').onclick = () => {
-                navigator.clipboard.writeText(siteUrl);
-                alert('Link copiado com sucesso!');
-            };
+            document.getElementById('copyLinkBtn').onclick = () => { navigator.clipboard.writeText(siteUrl); alert('Link copiado com sucesso!'); };
         };
+
+        async function loadWinnersTicker() {
+            try {
+                const response = await fetch('/api/recent-winners');
+                const winners = await response.json();
+                const tickerBox = document.getElementById('tickerContent');
+                if (winners.length > 0) {
+                    tickerBox.innerHTML = winners.map(prize => `<span class="ticker-item"><i class="fa-solid fa-star"></i> Alguém acabou de ganhar <span style="color: #f1c40f;">${prize}</span>!</span>`).join('');
+                } else {
+                    tickerBox.innerHTML = `<span class="ticker-item"><i class="fa-solid fa-fire"></i> Os prêmios de hoje estão gelando! Seja o primeiro a ganhar.</span>`;
+                }
+            } catch (error) {
+                document.getElementById('tickerContent').innerHTML = "Boa sorte no sorteio de hoje!";
+            }
+        }
+        loadWinnersTicker();
     </script>
 </body>
 </html>
