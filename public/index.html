@@ -5,78 +5,93 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Raspadinha Premiada - Conteiner Beer</title>
     
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <link rel="stylesheet" href="css/style.css">
     
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
 
-    <div class="ad-space" id="ad-top">Espaço para Anúncio (Google AdSense)</div>
+    <div class="ad-space" id="ad-top">Espaço para Anúncio (AdSense)</div>
 
-    <img src="assets/logo.png" alt="Conteiner Beer Logo" style="max-width: 200px; margin-bottom: 10px;">
-    <h2>Sorteio na Mesa!</h2>
-    <p>Raspe e descubra seu prêmio.</p>
+    <main class="app-wrapper">
+        <header class="app-header">
+            <img src="assets/logo.png" alt="Conteiner Beer Logo" class="brand-logo" onerror="this.style.display='none'">
+            <h1 class="main-title">Sorteio na Mesa</h1>
+            <p class="subtitle">Raspe o cartão abaixo e descubra se hoje é o seu dia de sorte!</p>
+        </header>
 
-    <div class="game-container">
-        
-        <button id="playBtn" style="padding: 15px 30px; font-size: 18px; background-color: var(--primary-orange); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%;">
-            JOGAR AGORA
-        </button>
-        
-        <div class="scratch-area" id="scratchArea" style="display: none;">
-            <div id="prizeText" style="position: absolute; z-index: 1; text-align: center; width: 100%;"></div>
-            <canvas id="scratchCanvas" width="300" height="150" style="z-index: 2;"></canvas>
-        </div>
-
-        <div id="resultActions" style="display: none; margin-top: 20px;">
-            <p id="victoryMessage" style="font-weight: bold; font-size: 18px; color: var(--primary-blue);"></p>
+        <div class="game-card">
             
-            <button id="whatsappShareBtn" style="background-color: #25D366; color: white; padding: 12px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 10px;">
-                Compartilhar no WhatsApp
+            <button id="playBtn" class="btn-premium pulse-anim">
+                <i class="fa-solid fa-ticket"></i> QUERO JOGAR AGORA
             </button>
             
-            <button id="copyLinkBtn" style="background-color: var(--light-gray); color: #333; padding: 12px 20px; border: 1px solid #ccc; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%;">
-                Copiar Link
-            </button>
+            <div class="scratch-wrapper" id="scratchArea" style="display: none;">
+                <div class="ticket-border">
+                    <div id="prizeText" class="prize-text-hidden"></div>
+                    <canvas id="scratchCanvas" width="300" height="150" class="scratch-canvas"></canvas>
+                </div>
+                <p class="instruction-text"><i class="fa-solid fa-hand-pointer"></i> Passe o dedo para revelar</p>
+            </div>
+
+            <div id="resultActions" class="result-box" style="display: none;">
+                <div class="victory-icon"><i class="fa-solid fa-award"></i></div>
+                <p id="victoryMessage" class="victory-message"></p>
+                
+                <div class="action-buttons">
+                    <button id="whatsappShareBtn" class="btn-social btn-whatsapp">
+                        <i class="fa-brands fa-whatsapp"></i> Compartilhar
+                    </button>
+                    
+                    <button id="copyLinkBtn" class="btn-social btn-copy">
+                        <i class="fa-solid fa-link"></i> Copiar Link
+                    </button>
+                </div>
+            </div>
         </div>
-    </div>
+    </main>
 
-    <div class="ad-space" id="ad-bottom" style="margin-top: 30px;">Espaço para Anúncio (Google AdSense)</div>
+    <div class="ad-space" id="ad-bottom">Espaço para Anúncio (AdSense)</div>
 
-    <footer style="margin-top: 40px; padding: 20px; font-size: 12px; color: #666; text-align: center; border-top: 1px solid #ddd; width: 100%; max-width: 400px;">
-        <p>&copy; 2026 Conteiner Beer. Promoção válida apenas para maiores de 18 anos.</p>
-        <p>
-            <a href="termos.html" style="color: var(--primary-blue); text-decoration: none;">Termos de Uso</a> | 
-            <a href="privacidade.html" style="color: var(--primary-blue); text-decoration: none;">Política de Privacidade</a>
-        </p>
+    <footer class="app-footer">
+        <p>&copy; 2026 Conteiner Beer. Para maiores de 18 anos.</p>
+        <div class="legal-links">
+            <a href="termos.html">Termos de Uso</a> &bull; 
+            <a href="privacidade.html">Privacidade</a>
+        </div>
     </footer>
 
     <script src="js/scratch.js"></script>
     <script>
-        // Lógica de Interface Básica
         document.getElementById('playBtn').addEventListener('click', () => {
-            document.getElementById('scratchArea').style.display = 'flex';
+            document.getElementById('scratchArea').style.display = 'block';
         });
 
-        // Função global chamada pelo scratch.js quando o usuário termina de raspar
         window.showVictoryUI = function(prize) {
             document.getElementById('resultActions').style.display = 'block';
+            document.querySelector('.instruction-text').style.display = 'none';
             
-            // Verifica se ganhou ou se é o "Tente Novamente" para mudar a mensagem
+            const vicIcon = document.querySelector('.victory-icon i');
+            
             if (prize === 'Tente Novamente') {
-                document.getElementById('victoryMessage').innerText = `Ah que pena... ${prize}! Na próxima rodada sai.`;
+                document.getElementById('victoryMessage').innerHTML = `Ah que pena...<br><strong>${prize}</strong>!<br><span style="font-size:14px; font-weight:400; color:#666;">Na próxima rodada a sorte sorri pra você.</span>`;
+                vicIcon.className = 'fa-regular fa-face-frown';
+                vicIcon.style.color = '#888';
             } else {
-                document.getElementById('victoryMessage').innerText = `Parabéns! Você ganhou: ${prize}! Mostre ao garçom.`;
-                // Dispara o confete apenas se ganhar um prêmio real
-                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                document.getElementById('victoryMessage').innerHTML = `Parabéns!<br>Você ganhou:<br><span class="highlight-prize">${prize}</span><br><span style="font-size:14px; font-weight:400; color:#666;">Chame o garçom e resgate agora.</span>`;
+                vicIcon.className = 'fa-solid fa-trophy';
+                vicIcon.style.color = '#f1c40f'; // Dourado
+                confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#f36c21', '#2d6cdf', '#ffffff'] });
             }
 
-            // Configurar WhatsApp Share
             const siteUrl = window.location.href;
             const msg = encodeURIComponent(`Tô no Conteiner Beer 🍺 e tirei a sorte grande no jogo das mesas! Vem tentar a sorte também: ${siteUrl}`);
             document.getElementById('whatsappShareBtn').onclick = () => window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
             
-            // Copiar Link
             document.getElementById('copyLinkBtn').onclick = () => {
                 navigator.clipboard.writeText(siteUrl);
                 alert('Link copiado com sucesso!');
