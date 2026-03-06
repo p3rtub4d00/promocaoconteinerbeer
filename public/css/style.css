@@ -1,0 +1,66 @@
+/* public/css/style.css */
+:root {
+    --primary-orange: #f36c21;
+    --primary-blue: #2d6cdf;
+    --white: #ffffff;
+    --light-gray: #f4f4f4;
+}
+
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: linear-gradient(135deg, var(--light-gray), var(--white));
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+}
+
+.game-container {
+    background: var(--white);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    padding: 20px;
+    max-width: 400px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.scratch-area {
+    position: relative;
+    width: 300px;
+    height: 150px;
+    margin: 20px auto;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: var(--primary-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: 24px;
+    font-weight: bold;
+}
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: pointer;
+}
+
+/* Espaço para Anúncios */
+.ad-space {
+    width: 100%;
+    min-height: 50px;
+    background-color: #e0e0e0;
+    margin: 15px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #888;
+    border-radius: 8px;
+}
