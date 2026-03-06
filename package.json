@@ -1,0 +1,20 @@
+{
+  "name": "conteiner-beer-scratch",
+  "version": "1.0.0",
+  "description": "Sistema web de raspadinha promocional para o bar Conteiner Beer",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node --watch backend/server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.7"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "Conteiner Beer",
+  "license": "ISC"
+}
