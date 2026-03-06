@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin - Conteiner Beer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        .dashboard { max-width: 800px; margin: auto; padding: 20px; text-align: left; }
+        .dashboard { max-width: 800px; margin: auto; padding: 20px; text-align: left; background: var(--light-gray); min-height: 100vh;}
         .stat-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 15px; }
         .stat-value { font-size: 32px; font-weight: bold; color: var(--primary-orange); }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
     </style>
 </head>
-<body style="background-color: var(--light-gray);">
-
+<body>
     <div class="dashboard">
-        <h2>Painel de Controle 🍺</h2>
+        <h2 style="color: var(--primary-blue); margin-bottom: 20px;">Painel de Controle 🍺</h2>
         
         <div class="stat-card">
             <h3>Jogadas Hoje</h3>
@@ -31,35 +31,27 @@
             <h3>Prêmios Distribuídos</h3>
             <table id="prizesTable">
                 <tr><th>Prêmio</th><th>Quantidade</th></tr>
-                </table>
+            </table>
         </div>
     </div>
 
     <script>
-        // Substitua pelo token real do seu backend
         const ADMIN_TOKEN = 'Bearer CONTEINER_BEER_ADMIN_2026';
-
         async function loadStats() {
             try {
-                const response = await fetch('/api/admin/stats', {
-                    headers: { 'Authorization': ADMIN_TOKEN }
-                });
+                const response = await fetch('/api/admin/stats', { headers: { 'Authorization': ADMIN_TOKEN } });
                 const data = await response.json();
-
                 document.getElementById('playsToday').innerText = data.playsToday;
                 document.getElementById('totalPlays').innerText = data.totalPlays;
 
                 const table = document.getElementById('prizesTable');
                 for (const [prize, count] of Object.entries(data.prizesGiven)) {
-                    if(prize !== 'Tente Novamente') { // Oculta as perdas para focar nos prêmios
+                    if(prize !== 'Tente Novamente') {
                         table.innerHTML += `<tr><td>${prize}</td><td>${count}</td></tr>`;
                     }
                 }
-            } catch (error) {
-                alert('Erro ao carregar dados. Verifique a autenticação.');
-            }
+            } catch (error) { alert('Erro ao carregar dados.'); }
         }
-
         loadStats();
     </script>
 </body>
