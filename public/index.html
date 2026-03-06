@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Raspadinha Premiada - Conteiner Beer</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+    <div class="ad-space" id="ad-top">Espaço para Anúncio (Google AdSense)</div>
+
+    <img src="assets/logo.png" alt="Conteiner Beer Logo" style="max-width: 200px; margin-bottom: 10px;">
+    <h2>Sorteio na Mesa!</h2>
+    <p>Raspe e descubra seu prêmio.</p>
+
+    <div class="game-container">
+        <button id="playBtn" style="padding: 15px 30px; font-size: 18px; background-color: var(--primary-orange); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold;">JOGAR AGORA</button>
+        
+        <div class="scratch-area" id="scratchArea" style="display: none;">
+            <div id="prizeText" style="position: absolute; z-index: 1; text-align: center; width: 100%;"></div>
+            <canvas id="scratchCanvas" width="300" height="150" style="z-index: 2;"></canvas>
+        </div>
+
+        <div id="resultActions" style="display: none; margin-top: 20px;">
+            <p id="victoryMessage" style="font-weight: bold; font-size: 18px; color: var(--primary-blue);"></p>
+            <button id="whatsappShareBtn" style="background-color: #25D366; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 10px;">
+                Compartilhar no WhatsApp
+            </button>
+            <button id="copyLinkBtn" style="background-color: var(--light-gray); color: #333; padding: 10px 20px; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; width: 100%;">
+                Copiar Link
+            </button>
+        </div>
+    </div>
+
+    <div class="ad-space" id="ad-bottom" style="margin-top: 30px;">Espaço para Anúncio (Google AdSense)</div>
+
+    <script src="js/scratch.js"></script>
+    <script>
+        // Lógica simples de UI para complementar o scratch.js
+        document.getElementById('playBtn').addEventListener('click', () => {
+            document.getElementById('scratchArea').style.display = 'flex';
+        });
+
+        // Função chamada pelo scratch.js quando o usuário ganha
+        window.showVictoryUI = function(prize) {
+            document.getElementById('resultActions').style.display = 'block';
+            document.getElementById('victoryMessage').innerText = `Você ganhou: ${prize}! Mostre ao garçom.`;
+            
+            // Confete!
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+
+            // Configurar WhatsApp Share
+            const siteUrl = window.location.href;
+            const msg = encodeURIComponent(`Ganhei um prêmio incrível no jogo do Conteiner Beer 🍺! Tente a sorte você também: ${siteUrl}`);
+            document.getElementById('whatsappShareBtn').onclick = () => window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+            
+            // Copiar Link
+            document.getElementById('copyLinkBtn').onclick = () => {
+                navigator.clipboard.writeText(siteUrl);
+                alert('Link copiado!');
+            };
+        };
+    </script>
+</body>
+</html>
