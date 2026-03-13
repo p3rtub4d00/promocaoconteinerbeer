@@ -4,8 +4,8 @@ const router = express.Router();
 const db = require('./database.js');
 
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'rafaelRAMOS';
 
 const sessions = new Map();
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
