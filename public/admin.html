@@ -2,29 +2,41 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Conteiner Beer</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        .dashboard { max-width: 800px; margin: auto; padding: 20px; text-align: left; background: var(--light-gray); min-height: 100vh;}
+        .dashboard { max-width: 800px; margin: auto; padding: 20px; text-align: left; background: var(--light-gray); min-height: 100vh; }
         .stat-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 15px; }
         .stat-value { font-size: 32px; font-weight: bold; color: var(--primary-orange); }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
+        .toolbar { display: flex; gap: 10px; margin-bottom: 15px; }
+        .toolbar input { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
+        .toolbar button { padding: 10px 14px; border: none; border-radius: 8px; background: var(--primary-blue); color: white; cursor: pointer; }
+        .helper-text { color: #666; margin-bottom: 12px; font-size: 13px; }
     </style>
 </head>
 <body>
     <div class="dashboard">
-        <h2 style="color: var(--primary-blue); margin-bottom: 20px;">Painel de Controle 🍺</h2>
-        
+        <h2 style="color: var(--primary-blue); margin-bottom: 10px;">Painel de Controle 🍺</h2>
+        <p class="helper-text">Informe o token administrativo (não fica hardcoded na página).</p>
+
+        <div class="toolbar">
+            <input id="adminTokenInput" type="password" placeholder="Digite o token ADMIN_TOKEN do servidor" />
+            <button id="saveTokenBtn">Salvar token</button>
+            <button id="clearTokenBtn">Limpar</button>
+        </div>
+
         <div class="stat-card">
             <h3>Jogadas Hoje</h3>
-            <div class="stat-value" id="playsToday">Carregando...</div>
+            <div class="stat-value" id="playsToday">-</div>
         </div>
 
         <div class="stat-card">
             <h3>Total de Jogadas (Geral)</h3>
-            <div class="stat-value" id="totalPlays">Carregando...</div>
+            <div class="stat-value" id="totalPlays">-</div>
         </div>
 
         <div class="stat-card">
@@ -36,23 +48,70 @@
     </div>
 
     <script>
-        const ADMIN_TOKEN = 'Bearer CONTEINER_BEER_ADMIN_2026';
+        const tokenInput = document.getElementById('adminTokenInput');
+        const saveTokenBtn = document.getElementById('saveTokenBtn');
+        const clearTokenBtn = document.getElementById('clearTokenBtn');
+
+        tokenInput.value = localStorage.getItem('adminToken') || '';
+
+        saveTokenBtn.addEventListener('click', () => {
+            const token = tokenInput.value.trim();
+            if (!token) {
+                alert('Informe um token válido.');
+                return;
+            }
+            localStorage.setItem('adminToken', token);
+            loadStats();
+        });
+
+        clearTokenBtn.addEventListener('click', () => {
+            localStorage.removeItem('adminToken');
+            tokenInput.value = '';
+            alert('Token removido.');
+        });
+
         async function loadStats() {
+            const token = (localStorage.getItem('adminToken') || '').trim();
+            if (!token) {
+                return;
+            }
+
             try {
-                const response = await fetch('/api/admin/stats', { headers: { 'Authorization': ADMIN_TOKEN } });
+                const response = await fetch('/api/admin/stats', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Falha de autenticação ou requisição.');
+                }
+
                 const data = await response.json();
                 document.getElementById('playsToday').innerText = data.playsToday;
                 document.getElementById('totalPlays').innerText = data.totalPlays;
 
                 const table = document.getElementById('prizesTable');
-                for (const [prize, count] of Object.entries(data.prizesGiven)) {
-                    if(prize !== 'Tente Novamente') {
-                        table.innerHTML += `<tr><td>${prize}</td><td>${count}</td></tr>`;
+                table.innerHTML = '<tr><th>Prêmio</th><th>Quantidade</th></tr>';
+
+                Object.entries(data.prizesGiven).forEach(([prize, count]) => {
+                    if (prize !== 'Tente Novamente') {
+                        const tr = document.createElement('tr');
+                        const prizeTd = document.createElement('td');
+                        const countTd = document.createElement('td');
+                        prizeTd.textContent = prize;
+                        countTd.textContent = count;
+                        tr.appendChild(prizeTd);
+                        tr.appendChild(countTd);
+                        table.appendChild(tr);
                     }
-                }
-            } catch (error) { alert('Erro ao carregar dados.'); }
+                });
+            } catch (error) {
+                alert('Erro ao carregar dados administrativos. Verifique o token.');
+            }
         }
-        loadStats();
+
+        if (tokenInput.value.trim()) {
+            loadStats();
+        }
     </script>
 </body>
 </html>
