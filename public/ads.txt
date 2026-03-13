@@ -1,0 +1,6 @@
+# AdSense ads.txt
+# IMPORTANTE: substitua PUB_ID pelo seu ID real do AdSense (formato: pub-xxxxxxxxxxxxxxxx)
+# Exemplo de linha final:
+# google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
+
+google.com, PUB_ID, DIRECT, f08c47fec0942fa0
