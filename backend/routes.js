@@ -1,17 +1,77 @@
 const express = require('express');
+const crypto = require('crypto');
 const router = express.Router();
 const db = require('./database.js');
 
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
-const adminAuth = (req, res, next) => {
-    if (!ADMIN_TOKEN) {
-        return res.status(500).json({ error: 'Token administrativo não configurado no servidor.' });
+const sessions = new Map();
+const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+
+function parseCookies(cookieHeader) {
+    const cookies = {};
+    if (!cookieHeader) {
+        return cookies;
     }
 
-    const token = req.headers.authorization;
-    if (token === `Bearer ${ADMIN_TOKEN}`) {
+    cookieHeader.split(';').forEach((cookie) => {
+        const [name, ...rest] = cookie.trim().split('=');
+        cookies[name] = decodeURIComponent(rest.join('='));
+    });
+
+    return cookies;
+}
+
+function createSession(res) {
+    const sessionId = crypto.randomBytes(24).toString('hex');
+    sessions.set(sessionId, Date.now() + SESSION_TTL_MS);
+
+    const secureFlag = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+    res.setHeader('Set-Cookie', `admin_session=${sessionId}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_TTL_MS / 1000}${secureFlag}`);
+}
+
+function clearSession(req, res) {
+    const cookies = parseCookies(req.headers.cookie);
+    if (cookies.admin_session) {
+        sessions.delete(cookies.admin_session);
+    }
+
+    res.setHeader('Set-Cookie', 'admin_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');
+}
+
+function isValidSession(req) {
+    const cookies = parseCookies(req.headers.cookie);
+    const sessionId = cookies.admin_session;
+
+    if (!sessionId) {
+        return false;
+    }
+
+    const expiresAt = sessions.get(sessionId);
+    if (!expiresAt) {
+        return false;
+    }
+
+    if (expiresAt < Date.now()) {
+        sessions.delete(sessionId);
+        return false;
+    }
+
+    return true;
+}
+
+const adminAuth = (req, res, next) => {
+    if (isValidSession(req)) {
         return next();
+    }
+
+    if (ADMIN_TOKEN) {
+        const token = req.headers.authorization;
+        if (token === `Bearer ${ADMIN_TOKEN}`) {
+            return next();
+        }
     }
 
     return res.status(401).json({ error: 'Não autorizado.' });
@@ -27,6 +87,25 @@ function getLocalToday() {
 
     return `${parts.find((p) => p.type === 'year').value}-${parts.find((p) => p.type === 'month').value}-${parts.find((p) => p.type === 'day').value}`;
 }
+
+router.post('/admin/login', (req, res) => {
+    if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
+        return res.status(500).json({ error: 'Usuário/senha admin não configurados no servidor.' });
+    }
+
+    const { username, password } = req.body || {};
+    if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
+        return res.status(401).json({ error: 'Credenciais inválidas.' });
+    }
+
+    createSession(res);
+    return res.json({ success: true });
+});
+
+router.post('/admin/logout', (req, res) => {
+    clearSession(req, res);
+    return res.json({ success: true });
+});
 
 router.get('/admin/stats', adminAuth, (req, res) => {
     const today = getLocalToday();
