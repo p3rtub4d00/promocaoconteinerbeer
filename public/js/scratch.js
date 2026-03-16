@@ -5,11 +5,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     const playBtn = document.getElementById('playBtn');
 
     let isDrawing = false;
-    let prize = "";
+    let prize = '';
+
+    function getOrCreatePlayerId() {
+        const storageKey = 'player_id';
+        let playerId = localStorage.getItem(storageKey);
+
+        if (!playerId) {
+            if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+                playerId = window.crypto.randomUUID();
+            } else {
+                playerId = `player-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+            }
+
+            localStorage.setItem(storageKey, playerId);
+        }
+
+        return playerId;
+    }
 
     playBtn.addEventListener('click', async () => {
         try {
-            const response = await fetch('/api/play', { method: 'POST' });
+            const response = await fetch('/api/play', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ playerId: getOrCreatePlayerId() })
+            });
             const data = await response.json();
 
             if (data.error) {
@@ -22,14 +43,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             setupCanvas();
             playBtn.style.display = 'none';
         } catch (err) {
-            console.error("Erro de conexão", err);
+            console.error('Erro de conexão', err);
         }
     });
 
     function setupCanvas() {
         ctx.fillStyle = '#f36c21';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
+
         ctx.fillStyle = '#ffffff';
         ctx.font = '20px sans-serif';
         ctx.textAlign = 'center';
@@ -43,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         canvas.addEventListener('mousedown', startDrawing);
         canvas.addEventListener('mousemove', draw);
         canvas.addEventListener('mouseup', stopDrawing);
-        
+
         canvas.addEventListener('touchstart', startDrawing);
         canvas.addEventListener('touchmove', draw);
         canvas.addEventListener('touchend', stopDrawing);
