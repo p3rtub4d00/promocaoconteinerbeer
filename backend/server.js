@@ -6,6 +6,9 @@ const adminRoutes = require('./routes');
 
 const app = express();
 
+const PLAY_INTERVAL_MINUTES = 30;
+const MAX_PLAYS_PER_DAY = 4;
+
 const allowedOrigins = (process.env.CORS_ORIGINS || '').split(',').map((origin) => origin.trim()).filter(Boolean);
 const corsOptions = allowedOrigins.length > 0
     ? { origin: allowedOrigins, methods: ['GET', 'POST'], optionsSuccessStatus: 204 }
@@ -99,24 +102,68 @@ function getClientIp(req) {
     return req.ip || req.socket.remoteAddress || 'unknown';
 }
 
+function isValidPlayerId(value) {
+    return typeof value === 'string' && value.length >= 8 && value.length <= 128;
+}
+
 app.post('/api/play', playLimiter, (req, res) => {
+    const playerId = req.body?.playerId;
+
+    if (!isValidPlayerId(playerId)) {
+        return res.status(400).json({ error: 'Identificador do jogador inválido. Recarregue a página e tente novamente.' });
+    }
+
     const userIP = getClientIp(req);
     const today = getLocalToday();
     const wonPrize = drawPrize();
 
-    db.run(
-        'INSERT OR IGNORE INTO plays (ip, play_date, prize) VALUES (?, ?, ?)',
-        [userIP, today, wonPrize],
-        function insertPlay(err) {
-            if (err) {
-                return res.status(500).json({ error: 'Erro ao registrar jogada.' });
+    db.get(
+        'SELECT COUNT(*) AS count FROM plays WHERE player_id = ? AND play_date = ?',
+        [playerId, today],
+        (countErr, countRow) => {
+            if (countErr) {
+                return res.status(500).json({ error: 'Erro ao verificar limite diário.' });
             }
 
-            if (this.changes === 0) {
-                return res.status(403).json({ error: 'Você já tentou a sorte hoje! Volte amanhã.' });
+            const playsToday = countRow?.count || 0;
+            if (playsToday >= MAX_PLAYS_PER_DAY) {
+                return res.status(403).json({ error: `Você já usou suas ${MAX_PLAYS_PER_DAY} jogadas de hoje. Volte amanhã!` });
             }
 
-            return res.json({ success: true, prize: wonPrize });
+            db.get(
+                'SELECT created_at FROM plays WHERE player_id = ? ORDER BY id DESC LIMIT 1',
+                [playerId],
+                (lastErr, lastRow) => {
+                    if (lastErr) {
+                        return res.status(500).json({ error: 'Erro ao verificar intervalo entre jogadas.' });
+                    }
+
+                    if (lastRow?.created_at) {
+                        const lastPlayDate = new Date(`${lastRow.created_at}Z`);
+                        const diffMs = Date.now() - lastPlayDate.getTime();
+                        const waitMs = PLAY_INTERVAL_MINUTES * 60 * 1000 - diffMs;
+
+                        if (waitMs > 0) {
+                            const waitMinutes = Math.ceil(waitMs / 60000);
+                            return res.status(429).json({
+                                error: `Aguarde ${waitMinutes} minuto(s) para jogar novamente.`
+                            });
+                        }
+                    }
+
+                    return db.run(
+                        'INSERT INTO plays (ip, player_id, play_date, prize) VALUES (?, ?, ?, ?)',
+                        [userIP, playerId, today, wonPrize],
+                        (insertErr) => {
+                            if (insertErr) {
+                                return res.status(500).json({ error: 'Erro ao registrar jogada.' });
+                            }
+
+                            return res.json({ success: true, prize: wonPrize });
+                        }
+                    );
+                }
+            );
         }
     );
 });
