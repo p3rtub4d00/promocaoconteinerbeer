@@ -72,9 +72,13 @@
             const vicIcon = document.querySelector('.victory-icon i');
             
             if (prize === 'Tente Novamente') {
-                document.getElementById('victoryMessage').innerHTML = `Ah que pena...<br><strong>${prize}</strong>!<br><span style="font-size:14px; font-weight:400; color:#666;">Na próxima rodada a sorte sorri pra você.</span>`;
+                document.getElementById('victoryMessage').innerHTML = `Ah que pena...<br><strong>${prize}</strong>!<br><span style="font-size:14px; font-weight:400; color:#666;">Na próxima rodada a sorte sorri pra você.</span><br><span style="font-size:13px; font-weight:600; color:#999;">Voltando para o início em alguns segundos...</span>`;
                 vicIcon.className = 'fa-regular fa-face-frown';
                 vicIcon.style.color = '#888';
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 5000);
             } else {
                 document.getElementById('victoryMessage').innerHTML = `Parabéns!<br>Você ganhou:<br><span class="highlight-prize">${prize}</span><br><span style="font-size:14px; font-weight:400; color:#666;">Chame o garçom e resgate agora.</span>`;
                 vicIcon.className = 'fa-solid fa-trophy';
